@@ -4,10 +4,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
-import matplotlib.pyplot as plt
-import seaborn as sns
 import pandas as pd
-import tensorflow as tf
 from sklearn.metrics import accuracy_score
 
 
@@ -15,26 +12,58 @@ from sklearn.metrics import accuracy_score
 EPOCHS = 5
 BATCH_SIZE = 16
 LEARNING_RATE = 3e-4
-HIDDEN_DIM = 64
 KERNEL_DIM = 3
 POOL_DIM = 2
 
 
-#-------------RNN MODEL------------------#
+#-------------CNN MODEL------------------#
+class Conv2dLayer(nn.Module):
+    def __init__(self, in_dim, kernel_size):
+        super().__init__()
+        self.in_dim = in_dim
+        self.kernel_size = kernel_size
+        self.kernel = nn.Linear(kernel_size[0], kernel_size[0])
+
+    def forward(self, x):
+        x = x.unsqueeze(1)
+        output_size = x.shape[-1] - self.kernel_size[0] + 1
+        windows = F.unfold(x, x.shape[-1] - self.kernel_size[0] + 1)
+        windows = windows.view((windows.shape[0], windows.shape[1], self.kernel_size[0], self.kernel_size[0]))
+
+        convs = self.kernel(windows).sum(dim=-1).sum(dim=-1)
+        output = convs.view((convs.shape[0], output_size, output_size))
+
+        return output
+
+
+class AvgPool2dLayer(nn.Module):
+    def __init__(self, pool_size):
+        super().__init__()
+        self.kernel_size = pool_size
+
+    def forward(self, x):
+        x = x.unsqueeze(1)
+        window_size = x.shape[-1] - self.kernel_size[0] + 1
+
+        windows = F.unfold(x, kernel_size=window_size).mean(dim=-1)
+        output = windows.view((x.shape[0], window_size, window_size))[:, ::self.kernel_size[0], ::self.kernel_size[1]]
+        
+        return output
+
+
 class CNN(nn.Module):
     def __init__(self, in_dim, conv1_kernel_size, conv_pool_size):
         super().__init__()
-        self.conv1 = nn.Conv2d(in_dim, in_dim, (conv1_kernel_size, conv1_kernel_size))
-        self.pool1 = nn.AvgPool2d((conv_pool_size, conv_pool_size))
-        self.conv2 = nn.Conv2d(in_dim, in_dim, (conv1_kernel_size, conv1_kernel_size))
-        self.pool2 = nn.AvgPool2d((conv_pool_size, conv_pool_size))
-        self.lin  = nn.Linear(25, len(set(y_train)))
+        self.conv1 = Conv2dLayer(in_dim, (conv1_kernel_size, conv1_kernel_size))
+        self.pool  = AvgPool2dLayer((conv_pool_size, conv_pool_size))
+        self.conv2 = Conv2dLayer(in_dim, (conv1_kernel_size, conv1_kernel_size))
+        self.lin   = nn.Linear(25, 10)
 
     def forward(self, x):
         out1 = self.conv1(x)
-        out2 = self.pool1(out1)
+        out2 = self.pool(out1)
         out3 = self.conv2(out2)
-        out4 = self.pool2(out3)
+        out4 = self.pool(out3)
         out5 = out4.flatten(1)
         output = self.lin(out5)
         return output
@@ -52,8 +81,16 @@ class MNISTData(Dataset):
     def __getitem__(self, i):
         return (self.x[i], self.y[i])
 
-mnist = tf.keras.datasets.mnist
-(X_train, y_train), (X_test, y_test) = mnist.load_data()
+
+X_train = pd.read_csv("data/train_data.csv").drop(['Unnamed: 0', 'Y'], axis=1)
+y_train = pd.read_csv("data/train_data.csv")['Y']
+X_test = pd.read_csv("data/test_data.csv").drop(['Unnamed: 0', 'Y'], axis=1)
+y_test = pd.read_csv("data/test_data.csv")['Y']
+
+X_train = torch.tensor(X_train.to_numpy()).view((-1, 28, 28)) / 255.0
+y_train = torch.tensor(y_train.values)
+X_test = torch.tensor(X_test.to_numpy()).view((-1, 28, 28)) / 255.0
+y_test = torch.tensor(y_test.values)
 
 train_data = DataLoader(MNISTData(X_train, y_train), BATCH_SIZE, shuffle=True)
 test_data = DataLoader(MNISTData(X_test, y_test), BATCH_SIZE, shuffle=True)
