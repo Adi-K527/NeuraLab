@@ -18,7 +18,7 @@ from sklearn.metrics import accuracy_score
 
 
 #-------------HYPERPARAMS------------------#
-BATCH_SIZE = 2
+BATCH_SIZE = 32
 DEVICE = 'cuda' if torch.cuda.is_available() else "cpu"
 EPOCHS = 5
 LEARNING_RATE = 3e-4
@@ -26,7 +26,7 @@ LEARNING_RATE = 3e-4
 
 #-------------FETCH DATA------------------#
 kaggle_json = {
-    "username"  : "", #replace
+    "username"  : "",
     "key"       : ""
 }
 
@@ -63,14 +63,30 @@ model.to(DEVICE)
 #-------------DATA PREPROCESSING------------------#
 class ImageDataset(Dataset):
   def __init__(self, x, y):
-    self.x = x
-    self.y = y
+    train_files = x
+    train_masks = y
+
+    self.x = torch.zeros((len(train_files), 224, 224))
+    self.y = torch.zeros((len(train_files), 224, 224))
+    self.file_names = x
+
+    for i in range(len(train_files)):
+      img = Image.open(train_files[i])
+      img = img.convert("L").resize((224, 224))
+      self.x[i] = torch.tensor(np.array(img))
+
+      xi_mask = Image.fromarray(np.uint8(train_masks[i]))
+      xi_mask = xi_mask.resize((224, 224))
+      self.y[i] = torch.tensor(np.array(xi_mask))
+
+    self.x = self.x.unsqueeze(1)
+    self.y = self.y.unsqueeze(1)
 
   def __len__(self):
     return len(self.x)
 
   def __getitem__(self, idx):
-    return self.x[idx], self.y[idx]
+    return self.x[idx], self.y[idx], self.file_names[idx]
 
 train_data = pd.merge(pd.DataFrame(train_data_json["images"]),
                       pd.DataFrame(train_data_json["annotations"]), on="id")
@@ -127,11 +143,9 @@ def convert_to_tensor(batch):
 def train_epoch(model, train_data):
   model.train()
   lossi = []
-  for x,y in train_data:
-    y = y.unsqueeze(1).to(DEVICE)
-    x = convert_to_tensor(x).to(DEVICE)
-    x = x.view((BATCH_SIZE, 3, 640, 640))
-    x = x.mean(dim=1, keepdim=True)
+  for x,y,_ in train_data:
+    y = y.to(DEVICE)
+    x = x.to(DEVICE)
     output = model(x)
 
     loss = F.binary_cross_entropy_with_logits(output, y)
