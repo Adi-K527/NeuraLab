@@ -5,6 +5,7 @@
 - [X] RNN
 - [ ] ResNet
 - [ ] Autoencoder
+- [ ] VAE
 - [ ] GAN
 - [ ] DCGAN
 - [ ] WGAN
