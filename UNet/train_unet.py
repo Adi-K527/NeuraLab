@@ -6,15 +6,10 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
-import matplotlib.pyplot as plt
-import segmentation_models_pytorch as smp
-import seaborn as sns
 import pandas as pd
-import tensorflow as tf
 import numpy as np
 from zipfile import ZipFile
 from PIL import Image
-from sklearn.metrics import accuracy_score
 
 
 #-------------HYPERPARAMS------------------#
