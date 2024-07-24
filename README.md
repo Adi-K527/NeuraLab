@@ -1,10 +1,10 @@
-# NeuralNetsFromScratch
+# CoolNets
 
 - [ ] ANN
 - [X] CNN
 - [X] RNN
 - [ ] ResNet
-- [ ] Autoencoders
+- [ ] Autoencoder
 - [ ] GAN
 - [ ] DCGAN
 - [ ] WGAN
