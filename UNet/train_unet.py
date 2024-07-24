@@ -49,15 +49,71 @@ with open('/content/test/_annotations.coco.json','r') as file:
 
 #-------------UNET MODEL------------------#
 
-model = smp.Unet( # pretrained model for now
-    encoder_name='resnet50',
-    encoder_weights='imagenet',
-    in_channels=1,
-    classes=1,
-    activation=None,
-)
+def double_conv(in_channels, out_channels):
+  return nn.Sequential(
+      nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1),
+      nn.ReLU(inplace=True),
+      nn.Conv2d(out_channels, out_channels, kernel_size=3, padding=1),
+      nn.ReLU(inplace=True),
+  )
 
-model.to(DEVICE)
+
+def crop_tensor(orig, target_shape):
+  start = (orig.shape[2] - target_shape) // 2
+  end = orig.shape[2] - start
+  if end - start > target_shape:
+    end -= 1
+  return orig[:, :, start:end, start:end]
+
+
+class UNet(nn.Module):
+  def __init__(self):
+    super().__init__()
+
+    self.max_pool_2x2 = nn.MaxPool2d(kernel_size=2, stride=2)
+    self.down_conv_1 = double_conv(1, 64)
+    self.down_conv_2 = double_conv(64, 128)
+    self.down_conv_3 = double_conv(128, 256)
+    self.down_conv_4 = double_conv(256, 512)
+    self.down_conv_5 = double_conv(512, 1024)
+
+    self.up_trans_1 = nn.ConvTranspose2d(in_channels=1024, out_channels=512, kernel_size=2, stride=2)
+    self.up_conv_1 = double_conv(1024, 512)
+    self.up_trans_2 = nn.ConvTranspose2d(in_channels=512, out_channels=256, kernel_size=2, stride=2)
+    self.up_conv_2 = double_conv(512, 256)
+    self.up_trans_3 = nn.ConvTranspose2d(in_channels=256, out_channels=128, kernel_size=2, stride=2)
+    self.up_conv_3 = double_conv(256, 128)
+    self.up_trans_4 = nn.ConvTranspose2d(in_channels=128, out_channels=64, kernel_size=2, stride=2)
+    self.up_conv_4 = double_conv(128, 64)
+
+    self.out = nn.Conv2d(in_channels=64, out_channels=1, kernel_size=1)
+
+
+  def forward(self, x):
+    x1 = self.down_conv_1(x)
+    x2 = self.max_pool_2x2(x1)
+    x3 = self.down_conv_2(x2)
+    x4 = self.max_pool_2x2(x3)
+    x5 = self.down_conv_3(x4)
+    x6 = self.max_pool_2x2(x5)
+    x7 = self.down_conv_4(x6)
+    x8 = self.max_pool_2x2(x7)
+    x9 = self.down_conv_5(x8)
+
+    x = self.up_trans_1(x9)
+    x = torch.cat((x, crop_tensor(x7, x.shape[2])), 1)
+    x = self.up_conv_1(x)
+    x = self.up_trans_2(x)
+    x = torch.cat((x, crop_tensor(x5, x.shape[2])), 1)
+    x = self.up_conv_2(x)
+    x = self.up_trans_3(x)
+    x = torch.cat((x, crop_tensor(x3, x.shape[2])), 1)
+    x = self.up_conv_3(x)
+    x = self.up_trans_4(x)
+    x = torch.cat((x, crop_tensor(x1, x.shape[2])), 1)
+    x = self.up_conv_4(x)
+
+    return self.out(x)
 
 
 #-------------DATA PREPROCESSING------------------#
@@ -65,6 +121,7 @@ class ImageDataset(Dataset):
   def __init__(self, x, y):
     train_files = x
     train_masks = y
+
 
     self.x = torch.zeros((len(train_files), 224, 224))
     self.y = torch.zeros((len(train_files), 224, 224))
@@ -131,14 +188,8 @@ test_data = DataLoader(ImageDataset(test_img_paths,   test_masks),  BATCH_SIZE, 
 
 
 #-------------MODEL TRAINING------------------#
+model = UNet()
 optim = torch.optim.AdamW(model.parameters(), LEARNING_RATE)
-
-def convert_to_tensor(batch):
-  batch_tensor = torch.zeros((len(batch), 640, 640, 3))
-  for i in range(len(batch)):
-    batch_tensor[i] = torch.tensor(np.array(Image.open(batch[i])))
-
-  return batch_tensor
 
 def train_epoch(model, train_data):
   model.train()
