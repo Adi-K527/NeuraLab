@@ -3,8 +3,10 @@
 - [ ] ANN
 - [X] CNN
 - [X] RNN
+- [ ] AlexNet
 - [ ] ResNet
-- [ ] Autoencoder
+- [X] Autoencoder
+- [X] Convolutional Autoencoder
 - [ ] VAE
 - [ ] GAN
 - [ ] DCGAN
