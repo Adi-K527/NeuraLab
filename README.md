@@ -3,7 +3,6 @@
 - [ ] ANN
 - [X] CNN
 - [X] RNN
-- [ ] AlexNet
 - [X] ResNet
 - [X] Autoencoder
 - [X] Convolutional Autoencoder
@@ -13,4 +12,3 @@
 - [ ] WGAN
 - [X] UNet
 - [ ] Transformer
-- [ ] YOLOv6
