@@ -4,7 +4,7 @@
 - [X] CNN
 - [X] RNN
 - [ ] AlexNet
-- [ ] ResNet
+- [X] ResNet
 - [X] Autoencoder
 - [X] Convolutional Autoencoder
 - [ ] VAE
