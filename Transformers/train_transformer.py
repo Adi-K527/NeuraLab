@@ -160,7 +160,7 @@ def calc_loss(model, optim):
 
 transformer = Transformer()
 transformer = transformer.to(DEVICE)
-optim = torch.optim.AdamW(transformer.parameters(), 1e-3)
+optim = torch.optim.AdamW(transformer.parameters(), LEARNING_RATE)
 
 
 train_lossi = []
