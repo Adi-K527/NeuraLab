@@ -11,4 +11,4 @@
 - [ ] DCGAN
 - [ ] WGAN
 - [X] UNet
-- [ ] Transformer
+- [X] Transformer
