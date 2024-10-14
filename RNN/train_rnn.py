@@ -32,22 +32,26 @@ class RNNCell(nn.Module):
 
 
 class RNN(nn.Module):
-    def __init__(self, in_dim, hidden_dim):
+    def __init__(self, in_dim, hidden_dim, out_dim=1):
         super().__init__()
         self.hidden_dim = hidden_dim
         self.cell = RNNCell(in_dim, hidden_dim)
+        self.out_lin = nn.Linear(hidden_dim, out_dim)
     
     def forward(self, x):
-        h_t_minus_1 = torch.zeros(HIDDEN_SIZE)
-        h_t = torch.zeros(HIDDEN_SIZE)
+        h_t_minus_1 = torch.zeros((1, HIDDEN_SIZE))
+        h_t = torch.zeros((1, HIDDEN_SIZE))
         res = []
-        for t in range(x.shape[0]):
-            h_t, output = self.cell(x[t], h_t_minus_1)
-            res.append(output)
+        for t in range(x.shape[1]):
+            h_t, output = self.cell(x[:,t].view(-1, 1), h_t_minus_1)
+            res.append(h_t)
             h_t_minus_1 = h_t
 
         res = torch.stack(res)
-        return res
+        
+        final_out = res[-1]
+        output = self.out_lin(final_out)
+        return output
 
 
 #-------------DATA PREPROCESSING------------------#
