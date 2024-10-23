@@ -1,14 +1,13 @@
 # CoolNets
 
-- [ ] ANN
 - [X] CNN
 - [X] RNN
 - [X] ResNet
 - [X] Autoencoder
 - [X] Convolutional Autoencoder
 - [ ] VAE
-- [ ] GAN
-- [ ] DCGAN
+- [X] GAN
+- [X] DCGAN
 - [ ] WGAN
 - [X] UNet
 - [X] Transformer
