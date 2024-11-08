@@ -1,4 +1,4 @@
-# CoolNets
+# NeuraLab
 
 - [X] CNN
 - [X] RNN
