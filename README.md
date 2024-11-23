@@ -1,5 +1,7 @@
 # NeuraLab
 
+Implementations of popular neural network architectures
+
 - [X] CNN
 - [X] RNN
 - [X] ResNet
