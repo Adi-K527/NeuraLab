@@ -17,8 +17,8 @@ CNN:
 RNN:
 - [X] RNN
 - [X] LSTM
-- [ ] GRU
-- [ ] Bidirectional RNNs
+- [X] GRU
+- [X] Bidirectional RNNs
 - [ ] Echo State Networks
 
 
