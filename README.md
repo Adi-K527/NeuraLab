@@ -2,6 +2,8 @@
 
 Implementations of popular neural network architectures
 
+</br>
+
 CNN:
 - [X] CNN
 - [ ] AlexNet
