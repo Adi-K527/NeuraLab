@@ -2,7 +2,7 @@
 
 Implementations of popular neural network architectures
 
-</br>
+</br></br>
 
 CNN:
 - [X] CNN
@@ -15,6 +15,7 @@ CNN:
 - [ ] WaveNet
 - [ ] YOLO
 
+</br>
 
 RNN:
 - [X] RNN
@@ -23,6 +24,7 @@ RNN:
 - [X] Bidirectional RNNs
 - [ ] Echo State Networks
 
+</br>
 
 Autoencoder:
 - [X] Unsupervised Autoencoders
@@ -33,6 +35,7 @@ Autoencoder:
 - [X] Variational Autoencoders
 - [ ] VQ - Variational Autoencoders
 
+</br>
 
 GAN:
 - [X] GANs
@@ -43,6 +46,7 @@ GAN:
 - [ ] BEGAN
 - [ ] SAGAN
 
+</br>
 
 Transformer:
 - [X] GPT
@@ -50,6 +54,7 @@ Transformer:
 - [ ] RoBERTa
 - [ ] BART
 
+</br>
 
 NLP:
 - [ ] Word Embeddings (CBOW, Skip Gram)
@@ -58,6 +63,7 @@ NLP:
 - [ ] Attention
 - [ ] Conditional Random Fields for NER
 
+</br>
 
 Other Special Nets:
 - [ ] Kolmogorov Arnold Networks
